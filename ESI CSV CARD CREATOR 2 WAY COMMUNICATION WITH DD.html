@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ESI CSV Card Importer Power-Up</title>
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 20px auto; 
+            padding: 20px; 
+            text-align: center; 
+            background-color: black;
+            color: rgb(255, 115, 0);
+        }
+        
+        img {
+            display: block;
+            width: 300px;
+            height: auto;
+            margin: 0 auto 20px auto;
+        }
+
+        .container {
+            background-color: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin: 15px 0;
+        }
+
+        input[type="text"], input[type="file"], select {
+            width: 80%;
+            margin: 10px 0;
+            padding: 8px;
+            background-color: #333;
+            color: white;
+            border: 1px solid rgb(255, 115, 0);
+            border-radius: 4px;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            padding-right: 30px;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FF7300%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px;
+        }
+
+        button {
+            background-color: rgb(255, 115, 0);
+            color: black;
+            border: none;
+            padding: 12px 24px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: rgb(255, 140, 40);
+        }
+
+        .refresh-button {
+            background-color: #444;
+            color: rgb(255, 115, 0);
+            border: 1px solid rgb(255, 115, 0);
+            padding: 6px 12px;
+            font-size: 0.9em;
+        }
+
+        .refresh-button:hover {
+            background-color: #555;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .success {
+            background-color: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+        }
+
+        .error {
+            background-color: rgba(255, 0, 0, 0.1);
+            color: #ff0000;
+        }
+
+        .list-selection-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        h1, h2 {
+            color: rgb(255, 115, 0);
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: rgb(255, 115, 0);
+        }
+    </style>
+</head>
+<body>
+    
+<body>
+    <img src="https://assets.onecompiler.app/42um22r7s/42ukzzdeg/ESI%20Logo%202.png" alt="ESI Logo">
+    <h1>ESI CSV-TRELLO 2 WAY SYNC TOOL</h1>
+    
+    <div class="container">
+        <div class="input-group">
+            <label for="apiKeyInput">Trello API Key:</label>
+            <input type="text" id="apiKeyInput" placeholder="Enter your Trello API Key">
+        </div>
+        <div class="input-group">
+            <label for="tokenInput">Trello Token:</label>
+            <input type="text" id="tokenInput" placeholder="Enter your Trello Token">
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Import CSV to Trello</h2>
+        <div class="input-group">
+            <label for="listSelect">Select Destination List:</label>
+            <div class="list-selection-container">
+                <select id="listSelect">
+                    <option value="">Loading lists...</option>
+                </select>
+                <button class="refresh-button" id="refreshLists">↻</button>
+            </div>
+        </div>
+        <div class="input-group">
+            <input type="file" id="csvFileInput" accept=".csv">
+        </div>
+        <button id="importButton">Import to Trello</button>
+        <div id="importStatus" class="status"></div>
+    </div>
+
+    <div class="container">
+        <h2>Export Trello to CSV</h2>
+        <div class="input-group">
+            <label for="exportListSelect">Select List to Export:</label>
+            <div class="list-selection-container">
+                <select id="exportListSelect">
+                    <option value="">Loading lists...</option>
+                </select>
+            </div>
+        </div>
+        <button id="exportButton">Export from Trello</button>
+        <div id="exportStatus" class="status"></div>
+    </div>
+
+    <script>
+        // Previous JavaScript code remains the same
+        [Previous JavaScript Section]
+    </script>
+</body>
+</html>
