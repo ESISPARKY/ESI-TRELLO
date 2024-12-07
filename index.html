@@ -370,14 +370,17 @@ TrelloPowerUp.initialize({
     'board-buttons': function(t, options) {
         return [{
             icon: {
-                dark: '/api/placeholder/16/16',
-                light: '/api/placeholder/16/16'
+                dark: 'https://esisparky.github.io/ESI-TRELLO/esi.png',
+                light: 'https://esisparky.github.io/ESI-TRELLO/esi.png'
             },
-            text: 'CSV Sync',
+            text: 'ESI CSV Sync',
+            condition: 'always',
             callback: function(t) {
                 return t.modal({
-                    url: './index.html',
-                    height: 600
+                    url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
+                    height: 600,
+                    fullscreen: false,
+                    title: 'ESI CSV Sync Tool'
                 });
             }
         }];
