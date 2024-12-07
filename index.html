@@ -5,6 +5,9 @@
     <title>ESI CSV CARD IMPORTER POWER - UP</title>
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+    var t = window.TrelloPowerUp.iframe();
+    </script>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -365,36 +368,28 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('exportButton').addEventListener('click', exportCards);
 });
 
-// Initialize Trello Power-Up with all enabled capabilities
-console.log('Initializing Power-Up...');
-TrelloPowerUp.initialize({
-    'board-buttons': function(t, options) {
-        console.log('Board buttons function called');
-        return [{
-            text: 'ESI CSV',
-            condition: 'always',
-            position: 'left',
-            callback: function(t) {
-                console.log('Button clicked');
-                return t.modal({
-                    url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
-                    height: 600,
-                    title: 'ESI CSV Sync'
-                });
-            }
-        }];
-    },
-    'show-settings': function(t, options) {
-        console.log('Show settings called');
-        return t.modal({
-            url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
-            height: 600
-        });
-    },
-    'authorization-status': function(t, options){
-        console.log('Checking authorization status');
-        return { authorized: true };
+// Initialize Trello Power-Up with error handling
+window.TrelloPowerUp.initialize({
+    'board-buttons': function(t) {
+        try {
+            return [{
+                text: 'ESI CSV Sync',
+                callback: async function(t) {
+                    return await t.popup({
+                        title: 'ESI CSV Sync Tool',
+                        url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
+                        height: 600
+                    });
+                }
+            }];
+        } catch (error) {
+            console.error('Board button error:', error);
+            return [];
+        }
     }
+}, {
+    appKey: 'your-api-key-here', // Add your Trello API key here
+    appName: 'ESI CSV Sync Tool'
 });
     </script>
 </body>
