@@ -365,14 +365,15 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('exportButton').addEventListener('click', exportCards);
 });
 
-// Initialize Trello Power-Up with debugging
+// Initialize Trello Power-Up with all enabled capabilities
 console.log('Initializing Power-Up...');
 TrelloPowerUp.initialize({
     'board-buttons': function(t, options) {
         console.log('Board buttons function called');
         return [{
-            // Simple text button for testing
             text: 'ESI CSV',
+            condition: 'always',
+            position: 'left',
             callback: function(t) {
                 console.log('Button clicked');
                 return t.modal({
@@ -389,6 +390,10 @@ TrelloPowerUp.initialize({
             url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
             height: 600
         });
+    },
+    'authorization-status': function(t, options){
+        console.log('Checking authorization status');
+        return { authorized: true };
     }
 });
     </script>
