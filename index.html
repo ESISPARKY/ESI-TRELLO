@@ -365,25 +365,30 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('exportButton').addEventListener('click', exportCards);
 });
 
-// Initialize Trello Power-Up
+// Initialize Trello Power-Up with debugging
+console.log('Initializing Power-Up...');
 TrelloPowerUp.initialize({
     'board-buttons': function(t, options) {
+        console.log('Board buttons function called');
         return [{
-            icon: {
-                dark: 'https://esisparky.github.io/ESI-TRELLO/esi.png',
-                light: 'https://esisparky.github.io/ESI-TRELLO/esi.png'
-            },
-            text: 'ESI CSV Sync',
-            condition: 'always',
+            // Simple text button for testing
+            text: 'ESI CSV',
             callback: function(t) {
+                console.log('Button clicked');
                 return t.modal({
                     url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
                     height: 600,
-                    fullscreen: false,
-                    title: 'ESI CSV Sync Tool'
+                    title: 'ESI CSV Sync'
                 });
             }
         }];
+    },
+    'show-settings': function(t, options) {
+        console.log('Show settings called');
+        return t.modal({
+            url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
+            height: 600
+        });
     }
 });
     </script>
