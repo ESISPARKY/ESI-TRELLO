@@ -189,34 +189,36 @@ async function populateListOptions() {
     const exportSelect = document.getElementById('exportListSelect');
     const statusDiv = document.getElementById('importStatus');
     
-    try {
-        // First, test API credentials with a simple board fetch
-        console.log('Testing API connection...');
-        let boardId = ''; // We'll get this from t.board('id')
-        
-        // Get board ID from Trello context
-        try {
-            const board = await t.board('id');
-            console.log('Board ID:', board.id);
-            boardId = board.id;
-        } catch (e) {
-            console.error('Error getting board ID:', e);
-            updateStatus(statusDiv, 'Error: Cannot get board context. Are you running this from Trello?', 'error');
-            return;
-        }
+    if (!apiKeyInput.value || !tokenInput.value) {
+        updateStatus(statusDiv, 'Please enter both API key and token', 'error');
+        return;
+    }
 
-        // Test the API connection
-        const testResponse = await fetch(
-            `https://api.trello.com/1/boards/${boardId}?key=${apiKeyInput.value}&token=${tokenInput.value}`
+    try {
+        const board = await t.board('id');
+        console.log('Board ID:', board.id);
+
+        const listsResponse = await fetch(
+            `https://api.trello.com/1/boards/${board.id}/lists?key=${apiKeyInput.value}&token=${tokenInput.value}`
         );
 
-        if (!testResponse.ok) {
-            const errorText = await testResponse.text();
-            console.error('API Test Error:', errorText);
-            updateStatus(statusDiv, 'Error: Invalid API credentials', 'error');
-            return;
-        }
+        if (!listsResponse.ok) throw new Error('Failed to fetch lists');
 
+        const lists = await listsResponse.json();
+        populateDropdowns(lists, importSelect, exportSelect);
+        updateStatus(statusDiv, `Loaded ${lists.length} lists`, 'success');
+    } catch (error) {
+        console.error(error);
+        updateStatus(statusDiv, error.message, 'error');
+    }
+}
+
+function populateDropdowns(lists, importSelect, exportSelect) {
+    [importSelect, exportSelect].forEach(select => {
+        select.innerHTML = '<option value="">Select a list...</option>';
+        lists.forEach(list => select.add(new Option(list.name, list.id)));
+    });
+}
         // If we get here, credentials are good. Now get the lists
         const listsResponse = await fetch(
             `https://api.trello.com/1/boards/${boardId}/lists?key=${apiKeyInput.value}&token=${tokenInput.value}`
