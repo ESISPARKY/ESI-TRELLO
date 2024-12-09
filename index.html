@@ -384,19 +384,14 @@ window.TrelloPowerUp.initialize({
                     light: 'https://esisparky.github.io/ESI-TRELLO/esi.png'
                 },
                 text: 'ESI CARD GENERATOR',
-                callback: async function(t) {
-                    return await t.popup({
-                        url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
-                        title: 'ESI CARD GENERATOR',
-                        args: {
-                            maxHeight: '100%',
-                            maxWidth: '100%'
-                        },
-                        height: '100%',
-                        width: '100%'
-                    });
-                }
-            }];
+               callback: async function(t) {
+    return await t.modal({  // Changed from popup to modal
+        url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
+        title: 'ESI CARD GENERATOR',
+        fullscreen: true,
+        height: '80%',
+        width: '80%'
+    });
         } catch (error) {
             console.error('Board button error:', error);
             return [];
