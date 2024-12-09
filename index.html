@@ -368,11 +368,28 @@ function updateStatus(element, message, type) {
 
 // Add event listeners
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('apiKeyInput').addEventListener('change', populateListOptions);
-    document.getElementById('tokenInput').addEventListener('change', populateListOptions);
+    // Load saved credentials
+    const savedApiKey = localStorage.getItem('trelloApiKey');
+    const savedToken = localStorage.getItem('trelloToken');
+    
+    if (savedApiKey) document.getElementById('apiKeyInput').value = savedApiKey;
+    if (savedToken) document.getElementById('tokenInput').value = savedToken;
+    
+    if (savedApiKey && savedToken) populateListOptions();
+
+    document.getElementById('apiKeyInput').addEventListener('change', function() {
+        localStorage.setItem('trelloApiKey', this.value);
+        populateListOptions();
+    });
+
+    document.getElementById('tokenInput').addEventListener('change', function() {
+        localStorage.setItem('trelloToken', this.value);
+        populateListOptions();
+    });
     document.getElementById('refreshLists').addEventListener('click', populateListOptions);
     document.getElementById('importButton').addEventListener('click', importCards);
     document.getElementById('exportButton').addEventListener('click', exportCards);
+});
 });
 
 // Initialize Trello Power-Up with error handling
