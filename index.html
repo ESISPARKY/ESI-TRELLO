@@ -379,25 +379,32 @@ document.addEventListener('DOMContentLoaded', function() {
 // Initialize Trello Power-Up with error handling
 window.TrelloPowerUp.initialize({
     'board-buttons': function(t) {
-        try {
-            return [{
-                icon: {
-                    dark: 'https://esisparky.github.io/ESI-TRELLO/esi.png',
-                    light: 'https://esisparky.github.io/ESI-TRELLO/esi.png'
-                },
-                text: 'ESI CARD GENERATOR',
-               callback: async function(t) {
-    return await t.modal({  // Changed from popup to modal
-        url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
-        title: 'ESI CARD GENERATOR',
-        fullscreen: true,
-        height: '80%',
-        width: '80%'
-    });
-        } catch (error) {
-            console.error('Board button error:', error);
-            return [];
-        }
+        return [{
+            icon: {
+                dark: 'https://esisparky.github.io/ESI-TRELLO/esi.png',
+                light: 'https://esisparky.github.io/ESI-TRELLO/esi.png'
+            },
+            text: 'ESI CARD GENERATOR',
+            callback: function(t) {
+                return t.modal({
+                    url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
+                    height: '90%',
+                    width: '90%',
+                    fullscreen: true,
+                    title: 'ESI CARD GENERATOR'
+                });
+            }
+        }];
+    },
+    'authorization-status': function(t) {
+        return { authorized: true };
+    },
+    'show-authorization': function(t) {
+        return t.popup({
+            title: 'Authorization',
+            url: './index.html',
+            height: 75
+        });
     }
 });
 { appKey: 'your-api-key-here', // Add your Trello API key here
