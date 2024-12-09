@@ -375,11 +375,12 @@ window.TrelloPowerUp.initialize({
             return [{
                 text: 'ESI CARD SYNC',
                 callback: async function(t) {
-                    return await t.popup({
-                        title: 'ESI Sync Tool',
-                        url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
-                        height: 600
-                    });
+                    return await t.modal({
+    url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
+    height: 900,
+    fullscreen: true,
+    title: 'ESI CARD SYNC'
+});
                 }
             }];
         } catch (error) {
