@@ -9,14 +9,21 @@
     var t = window.TrelloPowerUp.iframe();
     </script>
     <style>
-        body { 
+       body { 
             font-family: Arial, sans-serif; 
-            max-width: 1200px; 
+            max-width: 1200px;
+            min-width: 800px;
             margin: 20px auto; 
             padding: 20px; 
             text-align: center; 
             background-color: black;
             color: rgb(255, 115, 0);
+        }
+        
+        .container {
+            width: 100%;
+            min-width: 800px;
+            max-width: 1200px;
         }
         
         img {
@@ -379,6 +386,7 @@ window.TrelloPowerUp.initialize({
     url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
     height: 900,
     fullscreen: true,
+    Width:1200, // Added width parameter
     title: 'ESI CARD GENERATOR'
 });
                 }
