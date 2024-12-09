@@ -373,12 +373,13 @@ window.TrelloPowerUp.initialize({
     'board-buttons': function(t) {
         try {
             return [{
-                text: 'ESI CSV Sync',
+                text: 'ESI CARD GENERATOR',
                 callback: async function(t) {
                     return await t.popup({
-                        title: 'ESI CSV Sync Tool',
+                        title: 'ESI CARD GENERATOR',
                         url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
                         height: 600
+                        width: 600
                     });
                 }
             }];
