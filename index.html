@@ -175,72 +175,40 @@
         var Promise = TrelloPowerUp.Promise;
 var t = TrelloPowerUp.iframe();
 
-// Modified populateListOptions function
+// Save credentials
+async function storeCredentials(apiKey, token) {
+  await t.set('member', 'prefs', { trelloApiKey: apiKey, trelloToken: token });
+}
+
+// Retrieve credentials
+async function getStoredCredentials() {
+  const { trelloApiKey, trelloToken } = await t.get('member', 'prefs');
+  return { trelloApiKey, trelloToken };
+}
+
+// Update populateListOptions
 async function populateListOptions() {
-    const apiKeyInput = document.getElementById('apiKeyInput');
-    const tokenInput = document.getElementById('tokenInput');
-    const importSelect = document.getElementById('listSelect');
-    const exportSelect = document.getElementById('exportListSelect');
-    const statusDiv = document.getElementById('importStatus');
-    
-    try {
-        // First, test API credentials with a simple board fetch
-        console.log('Testing API connection...');
-        let boardId = ''; // We'll get this from t.board('id')
-        
-        // Get board ID from Trello context
-        try {
-            const board = await t.board('id');
-            console.log('Board ID:', board.id);
-            boardId = board.id;
-        } catch (e) {
-            console.error('Error getting board ID:', e);
-            updateStatus(statusDiv, 'Error: Cannot get board context. Are you running this from Trello?', 'error');
-            return;
-        }
+  try {
+    // Retrieve stored API key and token
+    const { trelloApiKey, trelloToken } = await getStoredCredentials();
 
-        // Test the API connection
-        const testResponse = await fetch(
-            `https://api.trello.com/1/boards/${boardId}?key=${apiKeyInput.value}&token=${tokenInput.value}`
-        );
-
-        if (!testResponse.ok) {
-            const errorText = await testResponse.text();
-            console.error('API Test Error:', errorText);
-            updateStatus(statusDiv, 'Error: Invalid API credentials', 'error');
-            return;
-        }
-
-        // If we get here, credentials are good. Now get the lists
-        const listsResponse = await fetch(
-            `https://api.trello.com/1/boards/${boardId}/lists?key=${apiKeyInput.value}&token=${tokenInput.value}`
-        );
-
-        if (!listsResponse.ok) {
-            throw new Error(`HTTP error! status: ${listsResponse.status}`);
-        }
-
-        const lists = await listsResponse.json();
-        console.log('Lists retrieved:', lists);
-
-        // Clear and populate dropdowns
-        importSelect.innerHTML = '';
-        exportSelect.innerHTML = '';
-        
-        importSelect.add(new Option('Select a list...', ''));
-        exportSelect.add(new Option('Select a list...', ''));
-        
-        lists.forEach(list => {
-            importSelect.add(new Option(list.name, list.id));
-            exportSelect.add(new Option(list.name, list.id));
-        });
-
-        updateStatus(statusDiv, `Successfully loaded ${lists.length} lists`, 'success');
-        
-    } catch (error) {
-        console.error('Error in populateListOptions:', error);
-        updateStatus(statusDiv, `Error: ${error.message}`, 'error');
+    // Test API connection
+    const testResponse = await fetch(`https://api.trello.com/1/boards/${boardId}?key=${trelloApiKey}&token=${trelloToken}`);
+    if (!testResponse.ok) {
+      console.error('API Test Error:', await testResponse.text());
+      updateStatus(statusDiv, 'Error: Invalid API credentials', 'error');
+      return;
     }
+
+    // Get lists
+    const listsResponse = await fetch(`https://api.trello.com/1/boards/${boardId}/lists?key=${trelloApiKey}&token=${trelloToken}`);
+    const lists = await listsResponse.json();
+    populateDropdowns(lists);
+    updateStatus(statusDiv, `Loaded ${lists.length} lists`, 'success');
+  } catch (error) {
+    console.error('Error in populateListOptions:', error);
+    updateStatus(statusDiv, `Error: ${error.message}`, 'error');
+  }
 }
 
 // CSV Parsing Function with Papa Parse
@@ -359,13 +327,26 @@ function updateStatus(element, message, type) {
     element.className = `status ${type}`;
 }
 
-// Add event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('apiKeyInput').addEventListener('change', populateListOptions);
-    document.getElementById('tokenInput').addEventListener('change', populateListOptions);
-    document.getElementById('refreshLists').addEventListener('click', populateListOptions);
-    document.getElementById('importButton').addEventListener('click', importCards);
-    document.getElementById('exportButton').addEventListener('click', exportCards);
+// Update event listeners
+document.addEventListener('DOMContentLoaded', () => {
+  const apiKeyInput = document.getElementById('apiKeyInput');
+  const tokenInput = document.getElementById('tokenInput');
+
+  apiKeyInput.addEventListener('change', async () => {
+    const apiKey = apiKeyInput.value;
+    const token = tokenInput.value;
+    await storeCredentials(apiKey, token);
+    populateListOptions();
+  });
+
+  tokenInput.addEventListener('change', async () => {
+    const apiKey = apiKeyInput.value;
+    const token = tokenInput.value;
+    await storeCredentials(apiKey, token);
+    populateListOptions();
+  });
+
+  // Rest of the event listeners
 });
 
 // Initialize Trello Power-Up with error handling
