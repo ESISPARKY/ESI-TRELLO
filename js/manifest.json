@@ -1,1 +1,21 @@
-
+{
+  "name": "ESI Card Deletion",
+  "details": "A Power-Up that enables mass deletion of cards",
+  "icon": {
+    "dark": "./images/icon-dark.svg",
+    "light": "./images/icon-light.svg"
+  },
+  "author": "Tyler Murphy",
+  "capabilities": [
+    "callback",
+    "card-buttons",
+    "board-buttons",
+    "authorization-status",
+    "show-settings"
+  ],
+  "connectors": {
+    "iframe": {
+      "url": "./index.html"
+    }
+  }
+}
