@@ -10,15 +10,17 @@
     </script>
     <style>
        body { 
-            font-family: Arial, sans-serif; 
-            max-width: 1200px;
-            min-width: 800px;
-            margin: 20px auto; 
-            padding: 20px; 
-            text-align: center; 
-            background-color: black;
-            color: rgb(255, 115, 0);
-        }
+    font-family: Arial, sans-serif; 
+    max-width: 1200px;
+    min-width: 800px;
+    min-height: 95vh;
+    min-width: 95vw;
+    margin: 20px auto; 
+    padding: 20px; 
+    text-align: center; 
+    background-color: black;
+    color: rgb(255, 115, 0);
+}
         
         .container {
             width: 100%;
@@ -398,15 +400,16 @@ window.TrelloPowerUp.initialize({
         try {
             return [{
                 text: 'ESI CARD GENERATOR',
-                callback: async function(t) {
-                    return await t.modal({
-    url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
-    height: 1000,
-    fullscreen: true,
-    width:1200, // Added width parameter
-    title: 'ESI CARD GENERATOR'
-});
-                }
+               callback: async function(t) {
+    return await t.modal({
+        url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
+        height: '95%',
+        fullscreen: true,
+        args: { maxHeight: '95vh', maxWidth: '95vw' },
+        title: 'ESI CARD GENERATOR'
+    });
+}
+
             }];
         } catch (error) {
             console.error('Board button error:', error);
