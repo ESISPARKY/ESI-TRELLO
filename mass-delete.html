@@ -1,0 +1,285 @@
+// manifest.json
+{
+  "name": "ESI Card Deletion",
+  "details": "A Power-Up that enables mass deletion of cards",
+  "icon": {
+    "dark": "./images/icon-dark.svg",
+    "light": "./images/icon-light.svg"
+  },
+  "author": "Tyler Murphy",
+  "capabilities": [
+    "callback",
+    "card-buttons",
+    "board-buttons",
+    "authorization-status",
+    "show-settings"
+  ],
+  "connectors": {
+    "iframe": {
+      "url": "./index.html"
+    }
+  }
+}
+
+// index.html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Mass Card Deletion Power-Up</title>
+  <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  <script src="./js/client.js"></script>
+  <link rel="stylesheet" type="text/css" href="./styles/styles.css">
+</head>
+<body>
+  <div id="content">
+    <div id="selection-info"></div>
+    <button id="delete-selected" class="power-up-button" style="display: none;">
+      Delete Selected Cards
+    </button>
+  </div>
+</body>
+</html>
+
+// js/client.js
+let selectedCards = new Set();
+
+window.TrelloPowerUp.initialize({
+  'board-buttons': function(t, options) {
+    return [{
+      icon: {
+        dark: './images/icon-dark.svg',
+        light: './images/icon-light.svg'
+      },
+      text: 'Mass Delete Cards',
+      callback: function(t) {
+        return t.modal({
+          url: './mass-delete.html',
+          height: 400,
+          title: 'ESI Card Deletion'
+        });
+      }
+    }];
+  },
+  
+  'card-buttons': function(t, options) {
+    return [{
+      icon: {
+        dark: './images/checkbox-dark.svg',
+        light: './images/checkbox-light.svg'
+      },
+      text: 'Select for Deletion',
+      callback: async function(t) {
+        const card = await t.card('id', 'name');
+        if (selectedCards.has(card.id)) {
+          selectedCards.delete(card.id);
+          return t.alert({
+            message: `Unselected "${card.name}"`,
+            duration: 1
+          });
+        } else {
+          selectedCards.add(card.id);
+          return t.alert({
+            message: `Selected "${card.name}" for deletion`,
+            duration: 1
+          });
+        }
+      }
+    }];
+  },
+  
+  'authorization-status': function(t, options) {
+    return t.get('member', 'private', 'token')
+      .then(function(token) {
+        return { authorized: token != null };
+      });
+  }
+});
+
+// mass-delete.html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Mass Delete Cards</title>
+  <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="./styles/styles.css">
+</head>
+<body>
+  <div class="mass-delete-container">
+    <h2>Mass Delete Cards</h2>
+    <div class="selection-options">
+      <button onclick="selectByList()">Select by List</button>
+      <button onclick="selectByLabel()">Select by Label</button>
+      <button onclick="selectAll()">Select All</button>
+    </div>
+    <div id="selection-summary"></div>
+    <div class="delete-controls">
+      <button id="delete-selected" class="danger-button" onclick="deleteSelected()">
+        Delete Selected Cards
+      </button>
+    </div>
+  </div>
+  <script src="./js/mass-delete.js"></script>
+</body>
+</html>
+
+// js/mass-delete.js
+let t = window.TrelloPowerUp.iframe();
+
+async function deleteSelected() {
+  const token = await t.arg('member', 'token');
+  if (!token) {
+    await t.alert({
+      message: 'Please authorize the Power-Up first',
+      duration: 3,
+      display: 'error'
+    });
+    return;
+  }
+
+  const cards = Array.from(selectedCards);
+  if (cards.length === 0) {
+    await t.alert({
+      message: 'No cards selected for deletion',
+      duration: 3,
+      display: 'warning'
+    });
+    return;
+  }
+
+  const confirmed = await t.popup({
+    type: 'confirm',
+    title: 'Confirm Deletion',
+    message: `Are you sure you want to delete ${cards.length} cards? This cannot be undone.`,
+    confirmText: 'Delete Cards',
+    confirmStyle: 'danger'
+  });
+
+  if (confirmed) {
+    try {
+      const deletePromises = cards.map(cardId =>
+        fetch(`https://api.trello.com/1/cards/${cardId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `OAuth oauth_consumer_key="your-key-here", oauth_token="${token}"`,
+            'Content-Type': 'application/json'
+          }
+        })
+      );
+
+      await Promise.all(deletePromises);
+      
+      selectedCards.clear();
+      await t.alert({
+        message: `Successfully deleted ${cards.length} cards`,
+        duration: 3
+      });
+      
+      t.closePopup();
+    } catch (error) {
+      console.error('Error deleting cards:', error);
+      await t.alert({
+        message: 'Failed to delete some cards. Please try again.',
+        duration: 5,
+        display: 'error'
+      });
+    }
+  }
+}
+
+async function selectByList() {
+  const lists = await t.lists('id', 'name');
+  const selectedList = await t.popup({
+    type: 'list',
+    items: lists.map(list => ({
+      text: list.name,
+      callback: async (t) => {
+        const cards = await t.cards('id', 'name', 'idList');
+        const listCards = cards.filter(card => card.idList === list.id);
+        listCards.forEach(card => selectedCards.add(card.id));
+        updateSelectionSummary();
+      }
+    }))
+  });
+}
+
+async function selectByLabel() {
+  const labels = await t.board('labels');
+  const selectedLabel = await t.popup({
+    type: 'list',
+    items: labels.labels.map(label => ({
+      text: label.name || label.color,
+      callback: async (t) => {
+        const cards = await t.cards('id', 'name', 'labels');
+        const labelCards = cards.filter(card => 
+          card.labels.some(cardLabel => cardLabel.id === label.id)
+        );
+        labelCards.forEach(card => selectedCards.add(card.id));
+        updateSelectionSummary();
+      }
+    }))
+  });
+}
+
+async function selectAll() {
+  const cards = await t.cards('id');
+  cards.forEach(card => selectedCards.add(card.id));
+  updateSelectionSummary();
+}
+
+async function updateSelectionSummary() {
+  const summary = document.getElementById('selection-summary');
+  summary.textContent = `${selectedCards.size} cards selected for deletion`;
+}
+
+// styles/styles.css
+.mass-delete-container {
+  padding: 16px;
+}
+
+.selection-options {
+  margin: 16px 0;
+  display: flex;
+  gap: 8px;
+}
+
+.selection-options button {
+  padding: 8px 12px;
+  background: #0079BF;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.danger-button {
+  padding: 8px 12px;
+  background: #CF513D;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-top: 16px;
+}
+
+.danger-button:hover {
+  background: #B33F2D;
+}
+
+#selection-summary {
+  margin: 16px 0;
+  font-weight: bold;
+}
+
+// images/checkbox-dark.svg
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="3" y="3" width="18" height="18" rx="2" stroke="white" stroke-width="2"/>
+  <path d="M9 12L11 14L15 10" stroke="white" stroke-width="2"/>
+</svg>
+
+// images/checkbox-light.svg
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="3" y="3" width="18" height="18" rx="2" stroke="black" stroke-width="2"/>
+  <path d="M9 12L11 14L15 10" stroke="black" stroke-width="2"/>
+</svg>
