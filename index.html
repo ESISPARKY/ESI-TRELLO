@@ -305,7 +305,7 @@ async function importCards() {
 
     try {
         const cards = await parseCSV(fileInput.files[0]);
-        console.log('Parsed CSV data:', cards); // Debug log
+        console.log('Full parsed CSV data:', JSON.stringify(cards, null, 2));
 
         let successCount = 0;
         let failCount = 0;
@@ -318,11 +318,10 @@ async function importCards() {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            name: cardData.Title || 'Untitled Card',
-                            desc: cardData.Description || '',
+                            name: (cardData.Title || 'Untitled Card').toString().trim() || 'Untitled Card',
+                            desc: (cardData.Description || '').toString(),
                             idList: listSelect.value,
                             due: cardData['Due Date'] || null,
-                            // Add handling for Labels and Members if needed
                         })
                     }
                 );
@@ -331,7 +330,9 @@ async function importCards() {
                     successCount++;
                 } else {
                     failCount++;
-                    console.error('Card creation failed:', await response.text());
+                    const errorText = await response.text();
+                    console.error('Card creation failed:', response.status, errorText);
+                    console.error('Card data:', cardData);
                 }
 
                 updateStatus(
@@ -427,7 +428,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('exportButton').addEventListener('click', exportCards);
 });
 
-// Initialize Trello Power-Up with error handling
 window.TrelloPowerUp.initialize({
     'board-buttons': function(t) {
         try {
