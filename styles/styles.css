@@ -1,0 +1,37 @@
+.mass-delete-container {
+  padding: 16px;
+}
+
+.selection-options {
+  margin: 16px 0;
+  display: flex;
+  gap: 8px;
+}
+
+.selection-options button {
+  padding: 8px 12px;
+  background: #0079BF;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.danger-button {
+  padding: 8px 12px;
+  background: #CF513D;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-top: 16px;
+}
+
+.danger-button:hover {
+  background: #B33F2D;
+}
+
+#selection-summary {
+  margin: 16px 0;
+  font-weight: bold;
+}
