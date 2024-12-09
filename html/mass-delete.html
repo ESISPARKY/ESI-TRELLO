@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Mass Delete Cards</title>
+  <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="./styles/styles.css">
+</head>
+<body>
+  <div class="mass-delete-container">
+    <h2>Mass Delete Cards</h2>
+    <div class="selection-options">
+      <button onclick="selectByList()">Select by List</button>
+      <button onclick="selectByLabel()">Select by Label</button>
+      <button onclick="selectAll()">Select All</button>
+    </div>
+    <div id="selection-summary"></div>
+    <div class="delete-controls">
+      <button id="delete-selected" class="danger-button" onclick="deleteSelected()">
+        Delete Selected Cards
+      </button>
+    </div>
+  </div>
+  <script src="./js/mass-delete.js"></script>
+</body>
+</html>
