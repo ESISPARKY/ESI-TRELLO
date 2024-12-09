@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ESI CARD GENERATOR</title>
+    <title>ESI CARD SYNC</title>
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script>
@@ -125,7 +125,7 @@
     
 <body>
     <img src="https://assets.onecompiler.app/42um22r7s/42ukzzdeg/ESI%20Logo%202.png" alt="ESI Logo">
-    <h1>ESI CSV-TRELLO 2 WAY SYNC TOOL</h1>
+    <h1>ESI CARD SYNC</h1>
     
     <div class="container">
         <div class="input-group">
@@ -373,10 +373,10 @@ window.TrelloPowerUp.initialize({
     'board-buttons': function(t) {
         try {
             return [{
-                text: 'ESI CSV Sync',
+                text: 'ESI CARD SYNC',
                 callback: async function(t) {
                     return await t.popup({
-                        title: 'ESI CSV Sync Tool',
+                        title: 'ESI Sync Tool',
                         url: 'https://esisparky.github.io/ESI-TRELLO/index.html',
                         height: 600
                     });
@@ -389,7 +389,7 @@ window.TrelloPowerUp.initialize({
     }
 }, {
     appKey: 'your-api-key-here', // Add your Trello API key here
-    appName: 'ESI CSV Sync Tool'
+    appName: 'ESI CARD SYNC'
 });
     </script>
 </body>
