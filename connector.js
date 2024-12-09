@@ -3,7 +3,7 @@ window.TrelloPowerUp.initialize({
   'board-buttons': () => {
     console.log('Generating board button');
     return [{
-      text: 'ESI CSV',
+      text: 'ESI CARD GENERATOR',
       icon: {
         dark: './esi.png',
         light: './esi.png'
@@ -12,14 +12,14 @@ window.TrelloPowerUp.initialize({
       callback: (t) => {
         console.log('Button clicked');
         return t.popup({
-          title: 'ESI CSV Sync',
+          title: 'ESI CARD GENERATOR',
           url: './index.html',
-          height: 600
+          height: 900
         });
       }
     }];
   }
 }, {
   appKey: 'your-api-key', // Add your Trello API key here
-  appName: 'ESI CSV Sync'
+  appName: 'ESI CARD GENERATOR'
 });
