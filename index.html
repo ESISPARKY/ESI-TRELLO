@@ -19,7 +19,7 @@
         
         img {
             display: block;
-            width: 200px;
+            width: 300px;
             height: auto;
             margin: 0 auto 20px auto;
         }
@@ -286,75 +286,78 @@
             });
         }
 
-        // Import Cards Function
-        async function importCards() {
-            const fileInput = document.getElementById('csvFileInput');
-            const apiKeyInput = document.getElementById('apiKeyInput');
-            const tokenInput = document.getElementById('tokenInput');
-            const listSelect = document.getElementById('listSelect');
-            const statusDiv = document.getElementById('importStatus');
-            const importButton = document.getElementById('importButton');
-            
-            if (!fileInput.files.length || !apiKeyInput.value || !tokenInput.value || !listSelect.value) {
-                updateStatus(statusDiv, 'Please provide all required information.', 'error');
-                return;
-            }
+       // Import Cards Function
+async function importCards() {
+    const fileInput = document.getElementById('csvFileInput');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const tokenInput = document.getElementById('tokenInput');
+    const listSelect = document.getElementById('listSelect');
+    const statusDiv = document.getElementById('importStatus');
+    const importButton = document.getElementById('importButton');
+    
+    if (!fileInput.files.length || !apiKeyInput.value || !tokenInput.value || !listSelect.value) {
+        updateStatus(statusDiv, 'Please provide all required information.', 'error');
+        return;
+    }
 
-            importButton.disabled = true;
-            updateStatus(statusDiv, 'Importing cards', 'success', true);
+    importButton.disabled = true;
+    updateStatus(statusDiv, 'Importing cards', 'success', true);
 
+    try {
+        const cards = await parseCSV(fileInput.files[0]);
+        console.log('Parsed CSV data:', cards); // Debug log
+
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const cardData of cards) {
             try {
-                const cards = await parseCSV(fileInput.files[0]);
-                let successCount = 0;
-                let failCount = 0;
-
-                for (const cardData of cards) {
-                    try {
-                        const response = await fetch(
-                            `https://api.trello.com/1/cards?key=${apiKeyInput.value}&token=${tokenInput.value}`,
-                            {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    name: cardData.Title || cardData.Name || 'Untitled Card',
-                                    desc: cardData.Description || cardData.Desc || '',
-                                    idList: listSelect.value,
-                                    due: cardData['Due Date'] || cardData.Due || null
-                                })
-                            }
-                        );
-
-                        if (response.ok) {
-                            successCount++;
-                        } else {
-                            failCount++;
-                        }
-
-                        updateStatus(
-                            statusDiv,
-                            `Importing: ${successCount} succeeded, ${failCount} failed...`,
-                            'success',
-                            true
-                        );
-                    } catch (error) {
-                        failCount++;
-                        console.error('Card creation error:', error);
+                const response = await fetch(
+                    `https://api.trello.com/1/cards?key=${apiKeyInput.value}&token=${tokenInput.value}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: cardData.Title || 'Untitled Card',
+                            desc: cardData.Description || '',
+                            idList: listSelect.value,
+                            due: cardData['Due Date'] || null,
+                            // Add handling for Labels and Members if needed
+                        })
                     }
+                );
+
+                if (response.ok) {
+                    successCount++;
+                } else {
+                    failCount++;
+                    console.error('Card creation failed:', await response.text());
                 }
 
                 updateStatus(
                     statusDiv,
-                    `Import complete: ${successCount} succeeded, ${failCount} failed`,
-                    successCount > 0 ? 'success' : 'error'
+                    `Importing: ${successCount} succeeded, ${failCount} failed...`,
+                    'success',
+                    true
                 );
             } catch (error) {
-                console.error('Import error:', error);
-                updateStatus(statusDiv, `Error: ${error.message}`, 'error');
-            } finally {
-                importButton.disabled = false;
+                failCount++;
+                console.error('Card creation error:', error);
             }
         }
 
+        updateStatus(
+            statusDiv,
+            `Import complete: ${successCount} succeeded, ${failCount} failed`,
+            successCount > 0 ? 'success' : 'error'
+        );
+    } catch (error) {
+        console.error('Import error:', error);
+        updateStatus(statusDiv, `Error: ${error.message}`, 'error');
+    } finally {
+        importButton.disabled = false;
+    }
+}
         // Export Cards Function
         async function exportCards() {
             const apiKeyInput = document.getElementById('apiKeyInput');
