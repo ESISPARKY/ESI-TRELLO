@@ -385,70 +385,108 @@
         }
 
         // Import Cards Function
-        async function importCards() {
-            const fileInput = document.getElementById('csvFileInput');
-            const apiKeyInput = document.getElementById('apiKeyInput');
-            const tokenInput = document.getElementById('tokenInput');
-            const listSelect = document.getElementById('listSelect');
-            const statusDiv = document.getElementById('importStatus');
-            const importButton = document.getElementById('importButton');
-            
-            if (!fileInput.files.length || !apiKeyInput.value || !tokenInput.value || !listSelect.value) {
-                updateStatus(statusDiv, 'Please provide all required information.', 'error');
-                return;
-            }
+async function importCards() {
+    const fileInput = document.getElementById('csvFileInput');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const tokenInput = document.getElementById('tokenInput');
+    const listSelect = document.getElementById('listSelect');
+    const statusDiv = document.getElementById('importStatus');
+    const importButton = document.getElementById('importButton');
+    
+    if (!fileInput.files.length || !apiKeyInput.value || !tokenInput.value || !listSelect.value) {
+        updateStatus(statusDiv, 'Please provide all required information.', 'error');
+        return;
+    }
 
     importButton.disabled = true;
     updateStatus(statusDiv, 'Importing cards', 'success', true);
 
     try {
+        // First, get all existing cards in the list
+        const existingCardsResponse = await fetch(
+            `https://api.trello.com/1/lists/${listSelect.value}/cards?key=${apiKeyInput.value}&token=${tokenInput.value}&fields=name,id`
+        );
+        
+        if (!existingCardsResponse.ok) {
+            throw new Error(`Failed to fetch existing cards (${existingCardsResponse.status})`);
+        }
+        
+        const existingCards = await existingCardsResponse.json();
+        const existingCardsMap = new Map(
+            existingCards.map(card => [card.name.toLowerCase().trim(), card.id])
+        );
+
         const cards = await parseCSV(fileInput.files[0]);
         console.log('Full parsed CSV data:', JSON.stringify(cards, null, 2));
 
         let successCount = 0;
+        let updateCount = 0;
         let failCount = 0;
 
         for (const cardData of cards) {
             try {
-                const response = await fetch(
-                    `https://api.trello.com/1/cards?key=${apiKeyInput.value}&token=${tokenInput.value}`,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            name: (cardData.Title || 'Untitled Card').toString().trim() || 'Untitled Card',
-                            desc: (cardData.Description || '').toString(),
-                            idList: listSelect.value,
-                            due: cardData['Due Date'] || null,
-                        })
-                    }
-                );
+                const cardTitle = (cardData.Title || 'Untitled Card').toString().trim();
+                const cardTitleLower = cardTitle.toLowerCase();
+                const existingCardId = existingCardsMap.get(cardTitleLower);
 
-                if (response.ok) {
-                    successCount++;
+                let response;
+                
+                if (existingCardId) {
+                    // Update existing card
+                    response = await fetch(
+                        `https://api.trello.com/1/cards/${existingCardId}?key=${apiKeyInput.value}&token=${tokenInput.value}`,
+                        {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name: cardTitle,
+                                desc: (cardData.Description || '').toString(),
+                                due: cardData['Due Date'] || null,
+                            })
+                        }
+                    );
+                    if (response.ok) updateCount++;
                 } else {
+                    // Create new card
+                    response = await fetch(
+                        `https://api.trello.com/1/cards?key=${apiKeyInput.value}&token=${tokenInput.value}`,
+                        {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name: cardTitle,
+                                desc: (cardData.Description || '').toString(),
+                                idList: listSelect.value,
+                                due: cardData['Due Date'] || null,
+                            })
+                        }
+                    );
+                    if (response.ok) successCount++;
+                }
+
+                if (!response.ok) {
                     failCount++;
                     const errorText = await response.text();
-                    console.error('Card creation failed:', response.status, errorText);
+                    console.error('Card operation failed:', response.status, errorText);
                     console.error('Card data:', cardData);
                 }
 
                 updateStatus(
                     statusDiv,
-                    `Importing: ${successCount} succeeded, ${failCount} failed...`,
+                    `Processing: ${successCount} new, ${updateCount} updated, ${failCount} failed...`,
                     'success',
                     true
                 );
             } catch (error) {
                 failCount++;
-                console.error('Card creation error:', error);
+                console.error('Card operation error:', error);
             }
         }
 
         updateStatus(
             statusDiv,
-            `Import complete: ${successCount} succeeded, ${failCount} failed`,
-            successCount > 0 ? 'success' : 'error'
+            `Import complete: ${successCount} new cards, ${updateCount} updated, ${failCount} failed`,
+            (successCount + updateCount) > 0 ? 'success' : 'error'
         );
     } catch (error) {
         console.error('Import error:', error);
